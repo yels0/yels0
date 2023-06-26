@@ -1,0 +1,791 @@
+#include <stdio.h>
+#include <string.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <dos.h>
+
+/* Prototipo para la función mostrar_cargando */
+void mostrar_cargando(void);
+
+void mostrar_cargando() {
+    int i;
+    printf("Cargando");
+    for (i = 0; i < 3; i++) {
+        printf(".");
+        sleep(1);
+    }
+}
+
+int main() {
+    char pin[5];
+    char ch;
+    int i = 0;
+    int intentos = 0;
+    time_t start_time = 0;
+    time_t current_time = 0;
+    int bloqueado = 0;
+    double saldo_yasser = 1000.0;
+    double saldo_aron = 1000.0;
+    double tasa_cambio = 36.53;
+    char cuenta_depositar[21];
+    double monto_depositar;
+    int moneda_depositar;
+    int opcion; /*Mover la declaración de la variable aquí*/
+    int opcion_servicios; /*Variable para almacenar la opción del submenú de servicios*/
+    double *saldo_activo; /*Variable para almacenar el saldo de la cuenta activa*/
+    double monto_retiro; /*Variable para almacenar el monto a retirar*/
+    int moneda_retiro; /*Variable para almacenar la moneda del retiro*/
+    int opcion_valida; /*Mover la declaración de la variable aquí*/
+
+	/*Pines de las cuentas*/
+	char pin_yasser[5] = "1234";
+	char pin_aron[5] = "5678";
+
+	/*Variables para el pago de agua*/
+	double monto_agua = 50.0; /*Monto fijo del pago de agua*/
+	int pago_agua_yasser = 0; /*Variable para almacenar si Yasser ya pagó el agua*/
+	int pago_agua_aron = 0; /*Variable para almacenar si Aron ya pagó el agua*/
+
+	/*Variables para el pago de luz*/
+	double monto_luz;
+	int pago_luz_yasser = 0;
+	int pago_luz_aron = 0;
+
+	/*Variables para el pago de cable*/
+	double monto_cable;
+	int pago_cable_yasser = 0;
+	int pago_cable_aron = 0;
+
+	/*Variables para las recargas*/
+	char operador[6]; /*Variable para almacenar el operador de telefonía móvil*/
+	char numero_telefono[9]; /*Variable para almacenar el número de teléfono móvil*/
+	double monto_recarga; /*Variable para almacenar el monto de la recarga*/
+	int moneda_recarga; /*Variable para almacenar la moneda de la recarga*/
+	int recarga_valida; /*Variable para almacenar si la recarga es válida o no*/
+	char prefijos_tigo[300][5] = {"7710", "7711", "7712", "7713", "7714", "7715", "7716", "7717", "7718", "7719",
+    "7750", "7751", "7752", "7753", "7754", "7755", "7756", "7757", "7758", "7759",
+    "7870", "7871", "7872", "7873", "7874", "7875", "7876", "7877", "7878", "7879",
+    "8150", "8151", "8152", "8153", "8154", "8155", "8156", "8157", "8158", "8159",
+    "8260", "8261", "8262", "8263", "8264", "8265", "8266", "8267", "8268", "8269",
+    "8320", "8321", "8322", "8323", "8324", "8325", "8326", "8327", "8328", "8329",
+    "8370", "8371", "8372", "8373", "8374", "8375", "8376", "8377", "8378", "8379",
+    "8380", "8381", "8382", "8383", "8384", "8385", "8386", "8387", "8388", "8389",
+    "8390", "8391", "8392", "8393", "8394", "8395", "8396", "8397", "8398", "8399",
+    "8450", "8451", "8452", "8453", "8454", "8455", "8456", "8457", "8458", "8459",
+    "8460", "8461", "8462", "8463", "8464", "8465", "8466", "8467", "8468", "8469",
+    "8470", "8471", "8472", "8473", "8474", "8475", "8476", "8477", "8478", "8479",
+    "8480", "8481", "8482", "8483", "8484", "8485", "8486", "8487", "8488", "8489",
+    "8550", "8551", "8552", "8553", "8554", "8555", "8556", "8557", "8558", "8559",
+    "8590", "8591", "8592", "8593", "8594", "8595", "8596", "8597", "8598", "8599",
+    "8670", "8671", "8672", "8673", "8674", "8675", "8676", "8677", "8678", "8679",
+    "8680", "8681", "8682", "8683", "8684", "8685", "8686", "8687", "8688", "8689",
+    "8750", "8751", "8752", "8753", "8754", "8755", "8756", "8757", "8758", "8759",
+    "8760", "8761", "8762", "8763", "8764", "8765", "8766", "8767", "8768", "8769",
+    "8770", "8771", "8772", "8773", "8774", "8775", "8776", "8777", "8778", "8779",
+    "8800", "8801", "8802", "8803", "8804", "8805", "8806", "8807", "8808", "8809",
+    "8810", "8811", "8812", "8813", "8814", "8815", "8816", "8817", "8818", "8819",
+    "8860", "8861", "8862", "8863", "8864", "8865", "8866", "8867", "8868", "8869",
+    "8870", "8871", "8872", "8873", "8874", "8875", "8876", "8877", "8878", "8879",
+    "8880", "8881", "8882", "8883", "8884", "8885", "8886", "8887", "8888", "8889",
+    "8890", "8891", "8892", "8893", "8894", "8895", "8896", "8897", "8898", "8899",
+    "8950", "8951", "8952", "8953", "8954", "8955", "8956", "8957", "8958", "8959",
+    "8960", "8961", "8962", "8963", "8964", "8965", "8966", "8967", "8968", "8969",
+    "8970", "8971", "8972", "8973", "8974", "8975", "8976", "8977", "8978", "8979",
+    "8990", "8991", "8992", "8993", "8994", "8995", "8996", "8997", "8998", "8999"}; /*Arreglo con los prefijos iniciales de Tigo*/                   
+ char prefijos_claro[430][5] = {"5740", "5741", "5742", "5743", "5744", "5745", "5746", "5747", "5748", "5749",
+    "5780", "5781", "5782", "5783", "5784", "5785", "5786", "5787", "5788", "5789",
+    "5800", "5801", "5802", "5803", "5804", "5805", "5806", "5807", "5808", "5809",
+    "5810", "5811", "5812", "5813", "5814", "5815", "5816", "5817", "5818", "5819",
+    "5820", "5821", "5822", "5823", "5824", "5825", "5826", "5827", "5828", "5829",
+    "5830", "5831", "5832", "5833", "5834", "5835", "5836", "5837", "5838", "5839",
+    "5840", "5841", "5842", "5843", "5844", "5845", "5846", "5847", "5848", "5849",
+    "8330", "8331", "8332", "8333", "8334", "8335", "8336", "8337", "8338", "8339",
+    "8350", "8351", "8352", "8353", "8354", "8355", "8356", "8357", "8358", "8359",
+    "8360", "8361", "8362", "8363", "8364", "8365", "8366", "8367", "8368", "8369",
+    "8400", "8401", "8402", "8403", "8404", "8405", "8406", "8407", "8408", "8409",
+    "8410", "8411", "8412", "8413", "8414", "8415", "8416", "8417", "8418", "8419",
+    "8420", "8421", "8422", "8423", "8424", "8425", "8426", "8427", "8428", "8429",
+    "8430", "8431", "8432", "8433", "8434", "8435", "8436", "8437", "8438", "8439",
+    "8440", "8441", "8442", "8443", "8444", "8445", "8446", "8447", "8448", "8449",
+    "8490", "8491", "8492", "8493", "8494", "8495", "8496", "8497", "8498", "8499",
+    "8500", "8501", "8502", "8503", "8504", "8505", "8506", "8507", "8508", "8509",
+    "8510", "8511", "8512", "8513", "8514", "8515", "8516", "8517", "8518", "8519",
+    "8520", "8521", "8522", "8523", "8524", "8525", "8526", "8527", "8528", "8529",
+    "8530", "8531", "8532", "8533", "8534", "8535", "8536", "8537", "8538", "8539",
+    "8540", "8541", "8542", "8543", "8544", "8545", "8546", "8547", "8548", "8549",
+    "8600", "8601", "8602", "8603", "8604", "8605", "8606", "8607", "8608", "8609",
+    "8610", "8611", "8612", "8613", "8614", "8615", "8616", "8617", "8618", "8619",
+    "8620", "8621", "8622", "8623", "8624", "8625", "8626", "8627", "8628", "8629",
+    "8630", "8631", "8632", "8633", "8634", "8635", "8636", "8637", "8638", "8639",
+    "8640", "8641", "8642", "8643", "8644", "8645", "8646", "8647", "8648", "8649",
+    "8650", "8651", "8652", "8653", "8654", "8655", "8656", "8657", "8658", "8659",
+    "8660", "8661", "8662", "8663", "8664", "8665", "8666", "8667", "8668", "8669",
+    "8690", "8691", "8692", "8693", "8694", "8695", "8696", "8697", "8698", "8699",
+    "8700", "8701", "8702", "8703", "8704", "8705", "8706", "8707", "8708", "8709",
+    "8710", "8711", "8712", "8713", "8714", "8715", "8716", "8717", "8718", "8719",
+    "8720", "8721", "8722", "8723", "8724", "8725", "8726", "8727", "8728", "8729",
+    "8730", "8731", "8732", "8733", "8734", "8735", "8736", "8737", "8738", "8739",
+    "8740", "8741", "8742", "8743", "8744", "8745", "8746", "8747", "8748", "8749",
+    "8820", "8821", "8822", "8823", "8824", "8825", "8826", "8827", "8828", "8829",
+    "8830", "8831", "8832", "8833", "8834", "8835", "8836", "8837", "8838", "8839",
+    "8840", "8841", "8842", "8843", "8844", "8845", "8846", "8847", "8848", "8849",
+    "8850", "8851", "8852", "8853", "8854", "8855", "8856", "8857", "8858", "8859",
+    "8900", "8901", "8902", "8903", "8904", "8905", "8906", "8907", "8908", "8909",
+    "8910", "8911", "8912", "8913", "8914", "8915", "8916", "8917", "8918", "8919",
+    "8920", "8921", "8922", "8923", "8924", "8925", "8926", "8927", "8928", "8929",
+    "8930", "8931", "8932", "8933", "8934", "8935", "8936", "8937", "8938", "8939",
+    "8940", "8941", "8942", "8943", "8944", "8945", "8946", "8947", "8948", "8949"}; /*Arreglo con los prefijos iniciales de Claro*/                                                      
+	 while (1) {
+		system("cls");
+		printf("Ingresa el PIN: ");
+		i = 0;
+		while (i < 4) {
+			ch = getch();
+			if (ch == 13) break;
+			if (ch == '\b') {
+				if (i > 0) {
+					printf("\b \b");
+					i--;
+				}
+			} else if (ch >= '0' && ch <= '9') {
+				printf("*");
+				pin[i] = ch;
+				i++;
+			}
+		}
+
+		system("cls");
+
+		pin[i] = '\0';
+		system("cls");
+		mostrar_cargando();
+		system("cls");
+		if (strcmp(pin, pin_yasser) == 0) {
+			printf("¡Bienvenido Yasser! \n\n!CAJERO BAC CREDOMATIC! \n¡BANCO DE AMERICA CENTRAL!");
+			sleep(3);
+			saldo_activo = &saldo_yasser; /*Establecer el saldo activo*/
+		} else if (strcmp(pin, pin_aron) == 0) {
+			printf("¡Bienvenido Aron! \n\n!CAJERO BAC CREDOMATIC! \n¡BANCO DE AMERICA CENTRAL!");
+			sleep(3);
+			saldo_activo = &saldo_aron; /*Establecer el saldo activo*/
+		} else {
+			intentos++;
+			if (intentos >= 3) {
+				bloqueado = 1;
+				start_time = time(NULL);
+				printf("Inténtelo más tarde.\n");
+				sleep(2);
+				exit(0); /*Salir del programa después de exceder el límite de intentos*/
+			} else {
+				printf("PIN inválido.\n");
+				printf("Intentos restantes: %d\n", 3 - intentos);
+				sleep(2);
+				continue; /*Saltar al siguiente ciclo del bucle while*/
+			}
+		}
+
+        do {
+            system("cls");
+            printf("Men\xA3:\n");
+            printf("1. Consultar saldo\n");
+            printf("2. Dep\xA2sito\n");
+            printf("3. Retirar\n");
+            printf("4. Servicios\n");
+            printf("5. Configuraci\xA2n\n");
+            printf("6. Salir\n");
+            printf("Seleccione una opci\xA2n: ");
+
+            scanf("%d", &opcion);
+            switch(opcion) {
+                case 1:
+                    /*Código para consultar el saldo*/
+                    system("cls");
+                    mostrar_cargando();
+                    system("cls");
+                    printf("Saldo en d\xA2lares: $%.2lf\nSaldo en c\xA2rdobas: C$%.2lf\n", *saldo_activo, *saldo_activo * tasa_cambio);
+                    printf("\nPresiona cualquier tecla para volver al men\xA3...");
+                    getch();
+                    system("cls");
+                    mostrar_cargando();
+                    break;
+                case 2:
+                    /*Código para realizar un depósito*/
+                    system("cls");
+                    mostrar_cargando();
+                    system("cls");
+                    printf("N\xA3mero de cuenta a depositar: ");
+                    scanf("%20s", cuenta_depositar);
+                    printf("Monto a depositar: ");
+                    scanf("%lf", &monto_depositar);
+                    printf("Moneda a depositar (1: D\xA2lares, 2: C\xA2rdobas): ");
+                    scanf("%d", &moneda_depositar);
+                    if (moneda_depositar == 2) {
+                    monto_depositar /= tasa_cambio;
+                    }
+                    system("cls");
+                    mostrar_cargando();
+                    system("cls");
+                    if (strcmp(cuenta_depositar, "123456") == 0) {
+                    saldo_yasser += monto_depositar;
+                    if (saldo_activo == &saldo_aron) {
+                    *saldo_activo -= monto_depositar;
+                    }
+
+                    printf("\nDep\xA2sito realizado con \x82xito.\n");
+                    printf("\nPresiona cualquier tecla para volver al men\xA3...");
+                    getch();
+                    system("cls");
+                    mostrar_cargando();
+                    } else if (strcmp(cuenta_depositar, "789012") == 0) {
+                    saldo_aron += monto_depositar;
+                    if (saldo_activo == &saldo_yasser) {
+                    *saldo_activo -= monto_depositar;
+                    }
+
+                    printf("\nDep\xA2sito realizado con \x82xito.\n");
+                    printf("\nPresiona cualquier tecla para volver al men\xA3...");
+                    getch();
+                    system("cls");
+                    mostrar_cargando();
+                    } else {
+                    printf("Cuenta inv\xA0lida.\n");
+                    sleep(2);
+                    }
+					break;
+                    break;
+                case 3:
+                    /*Código para realizar un retiro*/
+                    system("cls");
+                    mostrar_cargando();
+                    system("cls");
+                    printf("---Retiro de efectivo---\n\nMonto\n-SELECCIONE CUANTO DESEA RETIRAR-\n\n");
+                    printf("1) 400\t4) 300\t7) 50\n2) 500\t5) 200\n3) 1000\t6) 100\n\n8) Otros\n9) Volver al men\xA3\n\n");
+
+                    opcion_valida = 0; /*Inicializar la variable aquí*/
+                    do {
+                        printf("Seleccione una opci\xA2n: ");
+                        if (scanf("%lf", &monto_retiro) == 1 && monto_retiro >= 1 && monto_retiro <= 9) {
+                            opcion_valida = 1;
+                        } else {
+                            printf("Opción inv\xA0lida. Intente de nuevo.\n");
+                            while (getchar() != '\n'); /*Limpiar el buffer de entrada*/
+                        }
+                    } while (!opcion_valida);
+
+                    if (monto_retiro == 9) {
+                        /*El usuario seleccionó la opción "Volver al menú"*/
+                        system("cls"); /*Limpiar la pantalla*/
+                        mostrar_cargando();
+                        break; /*Salir del switch y volver al menú principal*/
+                    } else if (monto_retiro == 8) {
+                        /*El usuario seleccionó la opción "Otros"*/
+                        int volver = 0;
+                        do {
+                            system("cls");
+                            mostrar_cargando();
+                            system("cls");
+                            printf("---Retiro personalizado---\n\n");
+                            printf("Ingrese el monto a retirar: ");
+                            scanf("%lf", &monto_retiro);
+                            printf("\n1) Aceptar\n2) Volver\n");
+                            printf("Seleccione una opci\xA2n: ");
+                            scanf("%d", &opcion);
+                            if (opcion == 2) {
+                                volver = 1;
+                                break;
+                            }
+                        } while (opcion != 1);
+
+                        if (volver) {
+                            break;
+                        }
+                    }
+
+                    printf("Moneda a retirar (1: D\xA2lares, 2: C\xA2rdobas): ");
+                    scanf("%d", &moneda_retiro);
+
+                    if (moneda_retiro == 2) {
+                        monto_retiro /= tasa_cambio;
+                    }
+                    if (monto_retiro > *saldo_activo) {
+                        /*El monto a retirar excede el saldo disponible*/
+                        printf("No tiene esa cantidad en su cuenta. Vuelva a intentarlo.\n");
+                        sleep(2);
+                    } else {
+                        /*El monto a retirar es válido*/
+                        *saldo_activo -= monto_retiro;
+                        printf("\nRetiro realizado con \x82xito.\n");
+                        printf("\nPresiona cualquier tecla para volver al men\xA3...");
+                        getch();
+                        system("cls");
+                        mostrar_cargando();
+                    }
+                    break;
+                case 4:
+                 /*Código para acceder a servicios*/
+                    system("cls");
+                    mostrar_cargando();
+                    do {
+                        system("cls");
+                        printf("Servicios:\n1. Pago de agua\n2. Pago de luz\n3. Pago de cable\n4. Recargas\n5. Volver a men\xA3\n");
+                        printf("Seleccione una opci\xA2n: ");
+                        scanf("%d", &opcion_servicios);
+                        switch(opcion_servicios) {
+                            case 1:
+                                /*Código para pagar el agua*/
+                                system("cls");
+                                mostrar_cargando();
+                                system("cls");
+                                if ((saldo_activo == &saldo_yasser && pago_agua_yasser) || (saldo_activo == &saldo_aron && pago_agua_aron)) {
+                                    /*El usuario ya pagó el agua*/
+                                    printf("Ya realiz\xA2 el pago del agua este mes.\n");
+                                    sleep(2);
+                                } else if (*saldo_activo < monto_agua) {
+                                    /*El saldo es insuficiente para pagar el agua*/
+                                    printf("No tiene suficiente saldo para realizar el pago del agua.\n");
+                                    sleep(2);
+                                } else {
+                                    /*El usuario puede pagar el agua*/
+                                    char numero_cuenta[21];
+                                    double monto_pagar;
+                                    int moneda_pagar;
+                                    char titular_cuenta[21];
+                                    time_t t = time(NULL);
+                                    struct tm tm = *localtime(&t);
+
+                                    printf("Ingrese el n\xA3mero de cuenta o referencia del recibo: ");
+                                    scanf("%20s", numero_cuenta);
+                                    printf("Ingrese el monto a pagar: ");
+                                    scanf("%lf", &monto_pagar);
+                                    printf("Ingrese el nombre del titular de la cuenta: ");
+                                    scanf("%20s", titular_cuenta);
+                                    printf("Moneda a pagar (1: D\xA2lares, 2: C\xA2rdobas): ");
+                                    scanf("%d", &moneda_pagar);
+
+                                    if (moneda_pagar == 2) {
+                                        monto_pagar /= tasa_cambio;
+                                    }
+
+                                    if (*saldo_activo < monto_pagar) {
+                                        /*El saldo es insuficiente para pagar el agua*/
+                                        printf("No tiene suficiente saldo para realizar el pago del agua.\n");
+                                        sleep(2);
+                                        break;
+                                    }
+
+                                    system("cls");
+                                    mostrar_cargando();
+                                    system("cls");
+
+                                    printf("---Confirmaci\xA2n de Pago---\n----- Recibo de agua-----\n\nN\xA3mero de Cuenta: %s\nMonto Pagado: %.2lf\nTitular de la Cuenta: %s\nFecha: %02d/%02d/%d\n\n1) Aceptar\n2) Volver\n", numero_cuenta, monto_pagar, titular_cuenta, tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+
+                                    do {
+                                        printf("\nSeleccione una opci\xA2n: ");
+                                        scanf("%d", &opcion);
+
+                                        if (opcion == 1) {
+                                            *saldo_activo -= monto_pagar;
+
+                                            if (saldo_activo == &saldo_yasser) {
+                                                pago_agua_yasser = 1;
+                                            } else if (saldo_activo == &saldo_aron) {
+                                                pago_agua_aron = 1;
+                                            }
+
+                                            printf("\n¡Pago \x90xitoso!\n");
+                                            sleep(5);
+                                            break;
+                                        } else if (opcion == 2) {
+                                            break;
+                                        } else {
+                                            printf("\nOpción inv\xA0lida. Intente de nuevo.\n");
+                                        }
+
+                                    } while (opcion != 1 && opcion != 2);
+
+                                }
+                                break;
+                            case 2:
+                                /*Código para pagar el luz*/
+                                system("cls");
+                                mostrar_cargando();
+                                system("cls");
+                                if ((saldo_activo == &saldo_yasser && pago_luz_yasser) || (saldo_activo == &saldo_aron && pago_luz_aron)) {
+                                    /*El usuario ya pagó el luz*/
+                                    printf("Ya realiz\xA2 el pago del luz este mes.\n");
+                                    sleep(2);
+                                                                } else {
+                                    /*El usuario puede pagar el luz*/
+                                    char numero_cuenta[21];
+                                    double monto_pagar;
+                                    int moneda_pagar;
+                                    char titular_cuenta[21];
+                                    time_t t = time(NULL);
+                                    struct tm tm = *localtime(&t);
+
+                                    printf("Ingrese el n\xA3mero de cuenta o referencia del recibo: ");
+                                    scanf("%20s", numero_cuenta);
+                                    printf("Ingrese el monto a pagar: ");
+                                    scanf("%lf", &monto_pagar);
+                                    printf("Ingrese el nombre del titular de la cuenta: ");
+                                    scanf("%20s", titular_cuenta);
+                                    printf("Moneda a pagar (1: D\xA2lares, 2: C\xA2rdobas): ");
+                                    scanf("%d", &moneda_pagar);
+
+                                    if (moneda_pagar == 2) {
+                                        monto_pagar /= tasa_cambio;
+                                    }
+
+                                    if (*saldo_activo < monto_pagar) {
+                                        /*El saldo es insuficiente para pagar el luz*/
+                                        printf("No tiene suficiente saldo para realizar el pago del luz.\n");
+                                        sleep(2);
+                                        break;
+                                    }
+
+                                    system("cls");
+                                    mostrar_cargando();
+                                    system("cls");
+
+                                    printf("---Confirmaci\xA2n de Pago---\n----- Recibo de luz-----\n\nN\xA3mero de Cuenta: %s\nMonto Pagado: %.2lf\nTitular de la Cuenta: %s\nFecha: %02d/%02d/%d\n\n1) Aceptar\n2) Volver\n", numero_cuenta, monto_pagar, titular_cuenta, tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+
+                                    do {
+                                        printf("\nSeleccione una opci\xA2n: ");
+                                        scanf("%d", &opcion);
+
+                                        if (opcion == 1) {
+                                            *saldo_activo -= monto_pagar;
+
+                                            if (saldo_activo == &saldo_yasser) {
+                                                pago_luz_yasser = 1;
+                                            } else if (saldo_activo == &saldo_aron) {
+                                                pago_luz_aron = 1;
+                                            }
+
+                                            printf("\n¡Pago \x90xitoso!\n");
+                                            sleep(5);
+                                            break;
+                                        } else if (opcion == 2) {
+                                            break;
+                                        } else {
+                                            printf("\nOpción inv\xA0lida. Intente de nuevo.\n");
+                                        }
+
+                                    } while (opcion != 1 && opcion != 2);
+
+                                }
+                                break;
+                            case 3:
+                                /*Código para pagar el cable*/
+                                system("cls");
+                                mostrar_cargando();
+                                system("cls");
+                                if ((saldo_activo == &saldo_yasser && pago_cable_yasser) || (saldo_activo == &saldo_aron && pago_cable_aron)) {
+                                    /*El usuario ya pagó el cable*/
+                                    printf("Ya realiz\xA2 el pago del cable este mes.\n");
+                                    sleep(2);
+                                                                } else {
+                                    /*El usuario puede pagar el cable*/
+                                    char numero_cuenta[21];
+                                    double monto_pagar;
+                                    int moneda_pagar;
+                                    char titular_cuenta[21];
+                                    time_t t = time(NULL);
+                                    struct tm tm = *localtime(&t);
+
+                                    printf("Ingrese el n\xA3mero de cuenta o referencia del recibo: ");
+                                    scanf("%20s", numero_cuenta);
+                                    printf("Ingrese el monto a pagar: ");
+                                    scanf("%lf", &monto_pagar);
+                                    printf("Ingrese el nombre del titular de la cuenta: ");
+                                    scanf("%20s", titular_cuenta);
+                                    printf("Moneda a pagar (1: D\xA2lares, 2: C\xA2rdobas): ");
+                                    scanf("%d", &moneda_pagar);
+
+                                    if (moneda_pagar == 2) {
+                                        monto_pagar /= tasa_cambio;
+                                    }
+
+                                    if (*saldo_activo < monto_pagar) {
+                                        /*El saldo es insuficiente para pagar el cable*/
+                                        printf("No tiene suficiente saldo para realizar el pago del cable.\n");
+                                        sleep(2);
+                                        break;
+                                    }
+
+                                    system("cls");
+                                    mostrar_cargando();
+                                    system("cls");
+
+                                    printf("---Confirmaci\xA2n de Pago---\n----- Recibo de cable-----\n\nN\xA3mero de Cuenta: %s\nMonto Pagado: %.2lf\nTitular de la Cuenta: %s\nFecha: %02d/%02d/%d\n\n1) Aceptar\n2) Volver\n", numero_cuenta, monto_pagar, titular_cuenta, tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+
+                                    do {
+                                        printf("\nSeleccione una opci\xA2n: ");
+                                        scanf("%d", &opcion);
+
+                                        if (opcion == 1) {
+                                            *saldo_activo -= monto_pagar;
+
+                                            if (saldo_activo == &saldo_yasser) {
+                                                pago_cable_yasser = 1;
+                                            } else if (saldo_activo == &saldo_aron) {
+                                                pago_cable_aron = 1;
+                                            }
+
+                                            printf("\n¡Pago \x90xitoso!\n");
+                                            sleep(5);
+                                            break;
+                                        } else if (opcion == 2) {
+                                            break;
+                                        } else {
+                                            printf("\nOpción inv\xA0lida. Intente de nuevo.\n");
+                                        }
+
+                                    } while (opcion != 1 && opcion != 2);
+
+                                }
+                                break;
+                            case 4:
+                                /*Código para acceder a recargas*/
+                                system("cls");
+                                mostrar_cargando();
+                                system("cls");
+                                printf("Recargas:\n\n");
+                                printf("Seleccione el operador de telefonia m\xA2vil:\n1. Tigo\n2. Claro\n3. Volver\n");
+                                printf("Seleccione una opci\xA2n: ");
+                                scanf("%d", &opcion);
+                                if (opcion == 3) {
+                                    /*El usuario seleccionó la opción "Volver"*/
+                                    system("cls"); /*Limpiar la pantalla*/
+                                    mostrar_cargando();
+                                    break; /*Salir del switch y volver al menú de servicios*/
+                                } else if (opcion == 1) {
+                                    /*El usuario seleccionó la opción "Tigo"*/
+                                    strcpy(operador, "Tigo"); /*Asignar el operador a la variable*/
+                                                                } else if (opcion == 2) {
+                                    /*El usuario seleccionó la opción "Claro"*/
+                                    strcpy(operador, "Claro"); /*Asignar el operador a la variable*/
+                                } else {
+                                    /*Opción inválida*/
+                                    printf("Opci\xA2n inv\xA0lida. Intente de nuevo.\n");
+                                    sleep(2);
+                                    break; /*Salir del switch y volver al menú de servicios*/
+                                }
+
+                                system("cls");
+                                mostrar_cargando();
+                                system("cls");
+                                printf("Recargas:\n\n");
+                                printf("Ingrese el n\xA3mero: ");
+                                scanf("%8s", numero_telefono); /*Leer el número de teléfono móvil*/
+
+                                recarga_valida = 0; /*/Inicializar la variable que indica si la recarga es válida o no*/
+
+                                if (strcmp(operador, "Tigo") == 0) {
+                                    /*Verificar si el número de teléfono móvil coincide con alguno de los prefijos iniciales de Tigo*/
+                                    for (i = 0; i < 300; i++) {
+                                        if (strncmp(numero_telefono, prefijos_tigo[i], 4) == 0) {
+                                            recarga_valida = 1; /*La recarga es válida*/
+                                            break;
+                                        }
+                                    }
+                                } else if (strcmp(operador, "Claro") == 0) {
+                                    /*Verificar si el número de teléfono móvil coincide con alguno de los prefijos iniciales de Claro*/
+                                    for (i = 0; i < 430; i++) {
+                                        if (strncmp(numero_telefono, prefijos_claro[i], 4) == 0) {
+                                            recarga_valida = 1; /*La recarga es válida*/
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (!recarga_valida) {
+                                    /*La recarga no es válida*/
+                                    printf("\nN\xA3mero de telefono m\xA2vil inv\xA0lido.\n");
+                                    sleep(2);
+                                    break; /*Salir del switch y volver al menú de servicios*/
+                                }
+
+                                system("cls");
+                                mostrar_cargando();
+                                system("cls");
+                                printf("Recargas:\n\n");
+								printf("---Monto---\n\n-SELECCIONE CUANTO DESEA RECARGAR-\n\n"); 
+								printf("1) $20\t4) $70\n2) $50\t5) Otros\n3) $100\t6) Volver\n\n"); 
+
+								opcion_valida = 0; /*Inicializar la variable aquí*/
+								do {
+									printf("Seleccione una opci\xA2n: ");
+									if (scanf("%lf", &monto_recarga) == 1 && monto_recarga >= 1 && monto_recarga <= 6) {
+										opcion_valida = 1;
+									} else {
+										printf("Opci\xA2n inv\xA0lida. Intente de nuevo.\n");
+										while (getchar() != '\n'); /*Limpiar el buffer de entrada*/
+									}
+								} while (!opcion_valida);
+
+								if (monto_recarga == 6) {
+									/*El usuario seleccionó la opción "Volver"*/
+									system("cls"); /*Limpiar la pantalla*/
+									mostrar_cargando();
+									break; /*Salir del switch y volver al menú de servicios*/
+								} else if (monto_recarga == 5) {
+									/*El usuario seleccionó la opción "Otros"*/
+									int volver = 0;
+									do {
+										system("cls");
+										mostrar_cargando();
+										system("cls");
+										printf("---Recarga personalizada---\n\n");
+										printf("Ingrese el monto a recargar: ");
+										scanf("%lf", &monto_recarga); /*Leer el monto a recargar*/
+										printf("\n1) Aceptar\n2) Volver\n");
+										printf("Seleccione una opci\xA2n: ");
+										scanf("%d", &opcion);
+										if (opcion == 2) {
+											volver = 1;
+											break;
+										}
+									} while (opcion != 1);
+
+									if (volver) {
+										break;
+									}
+																} else if (monto_recarga == 1) {
+									monto_recarga = 20.0; 
+								} else if (monto_recarga == 2) {
+									monto_recarga = 50.0; 
+								} else if (monto_recarga == 3) {
+									monto_recarga = 100.0; 
+								} else if (monto_recarga == 4) {
+									monto_recarga = 70.0; 
+								}
+                                printf("Moneda a recargar (1: D\xA2lares, 2: C\xA2rdobas): ");
+                                scanf("%d", &moneda_recarga); /*Leer la moneda a recargar*/
+
+                                if (moneda_recarga == 2) {
+                                    monto_recarga /= tasa_cambio; /*Convertir el monto a dólares*/
+                                }
+
+                                if (*saldo_activo < monto_recarga) {
+                                    /*El saldo es insuficiente para realizar la recarga*/
+                                    printf("\nNo tiene suficiente saldo para realizar la recarga.\n");
+                                    sleep(2);
+                                    break; /*Salir del switch*/
+                                }
+
+                                system("cls");
+                                mostrar_cargando();
+                                system("cls");
+
+                                printf("---Confirmaci\xA2n de Recarga---\n\nOperador: %s\nN\xA3mero de Telefono M\xA2vil: %s\nMonto Recargado: %.2lf\n\n1) Aceptar\n2) Volver\n", operador, numero_telefono, monto_recarga);
+
+                                do {
+                                    printf("\nSeleccione una opci\xA2n: ");
+                                    scanf("%d", &opcion);
+
+                                    if (opcion == 1) {
+                                        /*El usuario aceptó la recarga*/
+                                        *saldo_activo -= monto_recarga; /*Restar el monto recargado al saldo activo*/
+                                        printf("\n¡Recarga \x90xitosa!\n");
+                                        sleep(5);
+                                        break;
+                                    } else if (opcion == 2) {
+                                        /*El usuario volvió al menú de servicios*/
+                                        break;
+                                    } else {
+
+                                        /*Opción inválida*/
+                                        printf("\nOpci\xA2n inv\xA0lida. Intente de nuevo.\n");
+                                    }
+
+                                } while (opcion != 1 && opcion != 2);
+
+                                break;
+
+                            case 5:
+                             /*Volver al menú principal*/
+                                system("cls"); /*Limpiar la pantalla*/
+                                mostrar_cargando();
+                                break;
+                            default:
+                                /*Opción inválida*/
+                                printf("Opci\xA2n inv\xA0lida. Intente de nuevo.\n");
+                                sleep(2);
+                                break;
+                        }
+                    } while(opcion_servicios != 5);
+                    break;
+                case 5:
+                    /*Código para acceder a la configuración*/
+                    while (1) {
+                        system("cls");
+                        mostrar_cargando();
+                        printf("Configuraci\xA2n:\n1. Cambiar PIN\n2. Volver\n");
+                        ch = getch();
+                        if (ch == '1') {
+                            /*Cambiar PIN*/
+                            char nuevo_pin[5];
+                            int j = 0;
+                            system("cls");
+                            printf("Ingresa el nuevo PIN: ");
+                            while (j < 4) {
+                                ch = getch();
+                                if (ch == 13) break;
+                                if (ch == '\b') {
+                                    if (j > 0) {
+                                        printf("\b \b");
+                                        j--;
+                                    }
+                                } else if (ch >= '0' && ch <= '9') {
+                                    printf("*");
+                                    nuevo_pin[j] = ch;
+                                    j++;
+                                }
+                            }
+                            nuevo_pin[j] = '\0';
+                            if (saldo_activo == &saldo_yasser && strcmp(nuevo_pin, pin_yasser) == 0) {
+                                /*El nuevo PIN es igual al actual*/
+                                system("cls");
+                                printf("PIN id\x82ntico al actual.\n");
+                                sleep(2);
+                            } else if (saldo_activo == &saldo_aron && strcmp(nuevo_pin, pin_aron) == 0) {
+                                /*El nuevo PIN es igual al actual*/
+                                                                system("cls");
+                                printf("PIN id\x82ntico al actual.\n");
+                                sleep(2);
+                            } else {
+                                /*El nuevo PIN es diferente al actual*/
+                                if (saldo_activo == &saldo_yasser) {
+                                    strcpy(pin_yasser, nuevo_pin);
+                                } else if (saldo_activo == &saldo_aron) {
+                                    strcpy(pin_aron, nuevo_pin);
+                                }
+                                system("cls");
+                                printf("PIN cambiado con \x82xito.\n");
+                                sleep(2);
+                            }
+                        } else if (ch == '2') {
+                            break;
+                        }
+                    }
+                    break;
+                case 6:
+                    /*Salir del programa*/
+                    system("cls");
+                    printf("\n----GRACIAS POR ELEGIRNOS----\n-----BANCO DE AMERICA CENTRAL BAC CREDOMATIC-----\n");
+                    sleep(3);
+                    system("cls");
+                    mostrar_cargando();
+                    break;
+            }
+        } while(opcion != 6);
+    }
+    getch();
+    return 0;
+}
+
+
+
+
